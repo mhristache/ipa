@@ -33,7 +33,7 @@ def main(input_args):
     res = alloc_ips(input_dict)
 
     if args.output_format == 'json':
-        print(json.dumps(res, indent=2))
+        print(json.dumps(deobjectify(res), indent=2))
     elif args.output_format == 'yaml_anchors':
         print(to_yaml_anchors(res))
     elif args.output_format == 'human':
@@ -92,7 +92,16 @@ def alloc_ips(d):
         entry = res.setdefault(k, {'metadata': v.get('metadata', {}),
                                    'ipam': OrderedDict()})
 
+        deferred = []
+
         for s in v['schema']:
+            # if 'from' is specifiee, a new subnet should be allocated
+            # from a subnet created before so we defer this allocation
+            # until after all normal subnets are allocated
+            if 'from' in s:
+                deferred.append(s)
+                continue
+
             subnet_name = v['subnet'][s['label']]
             ip_pool = ipp[subnet_name]
 
@@ -131,17 +140,44 @@ def alloc_ips(d):
 
             # reserve the last usable IP for the gateway
             # if the net is big enough for that
-            gw_ip = str(net[-2]) if net.size >= 4 else None
+            gw_ip = net[-2] if net.size >= 4 else None
 
             entry['ipam'][s['name']] = {
                 'vlan': vid,
                 'metadata': s.get('metadata', {}),
                 'label': s['label'],
-                'ip_range': ip_range_to_dict(ip_range),
+                'ip_range': ip_range,
                 'gateway': gw_ip,
-                'cidr': str(net),
+                'cidr': net,
                 'prefixlen': net.prefixlen,
-                'netmask': str(net.netmask)
+                'netmask': net.netmask
+            }
+
+        # handled deferred allocations
+        d_ipr = {}
+        for s in deferred:
+            net = entry['ipam'][s['from']]['cidr']
+            # make sure the last IP is not used
+            # so that it can be used for the gateway
+            # start the ip range from -3 as -2 is the last usable ip
+            eidx = -3 if net.size >= 4 else -2
+            ip_range = d_ipr.setdefault(
+                s['from'], IpRangeAllocator(net, end_index=eidx))
+            ip_range = ip_range.alloc(s['size'])
+
+            # reserve the last usable IP for the gateway
+            # if the net is big enough for that
+            gw_ip = net[-2] if net.size >= 4 else None
+
+            entry['ipam'][s['name']] = {
+                'vlan': None,
+                'metadata': s.get('metadata', {}),
+                'label': None,
+                'ip_range': ip_range,
+                'gateway': gw_ip,
+                'cidr': net,
+                'prefixlen': net.prefixlen,
+                'netmask': net.netmask
             }
 
     return res
@@ -152,9 +188,22 @@ def ip_range_to_dict(r):
     return {'start': str(r[0]), 'end': str(r[-1]), 'str': str(r)}
 
 
+def deobjectify(d):
+    """Remove the objecst from the return dict"""
+    for entry in d.values():
+        for v in entry['ipam'].values():
+            v['ip_range'] = ip_range_to_dict(v['ip_range'])
+            v['netmask'] = str(v['netmask'])
+            v['cidr'] = str(v['cidr'])
+            v['gateway'] = str(v['gateway']) if v['gateway'] else None
+    return d
+
+
 def to_yaml_anchors(d):
     """Convert the response to an yaml anchor string that can be used in
     other yaml files, e.g. in j2i templates"""
+    deobjectify(d)
+
     res = ["ipam:"]
 
     def create_anchor(k, v, s='- &'):
@@ -176,6 +225,8 @@ def to_yaml_anchors(d):
 
 def to_human(d):
     """Convert the response to a human readable format"""
+    deobjectify(d)
+
     r = []
 
     # calculate the longest key names and use the info to align the output
@@ -189,7 +240,7 @@ def to_human(d):
     )
     l_ip = max(
         [len(x['cidr']) for v in d for x in d[v]['ipam'].values()] +
-        [len("IP")]
+        [len("CIDR")]
     )
     l_vlan = max(
         [len(str(x['vlan'])) for v in d for x in d[v]['ipam'].values()] +
@@ -200,7 +251,7 @@ def to_human(d):
         [len("IP_RANGE")]
     )
     l_gw = max(
-        [len(x['gateway'] or '-') for v in d for x in d[v]['ipam'].values()] +
+        [len(x['gateway'] or '-')for v in d for x in d[v]['ipam'].values()] +
         [len("GW_IP")]
     )
 
@@ -213,7 +264,7 @@ def to_human(d):
                                  c5.ljust(l_gw),
                                  c6.ljust(l_vlan)))
     # add the title
-    add_entry("NF", "NET", "IP", "IP_RANGE", "GW_IP", "VLAN")
+    add_entry("NF", "NET", "CIDR", "IP_RANGE", "GW_IP", "VLAN")
     r.append("-" * (l_nf + l_net + l_ip + l_vlan + l_ipr + l_gw + 10))
 
     for k, v in d.items():
