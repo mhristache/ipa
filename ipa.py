@@ -13,7 +13,7 @@ def main(input_args):
     parser.add_argument(dest="input_file",
                         help='the input file in yaml format')
 
-    output_formats = ['human', 'json', 'yaml_anchors']
+    output_formats = ['human', 'json', 'yaml-anchors']
     parser.add_argument('-o',
                         dest="output_format",
                         default="human",
@@ -21,6 +21,12 @@ def main(input_args):
                         help='the format of the output.'
                              'Supported options: {}. Default: human'
                              .format(", ".join(output_formats)))
+
+    parser.add_argument('-p',
+                        dest="previous_alloc",
+                        metavar="FILE.json",
+                        help='the result of a previous run/allocation, '
+                             'in json format.')
 
     parser.add_argument('--version', action='version', version='0.1')
 
@@ -30,11 +36,16 @@ def main(input_args):
     with open(args.input_file) as f:
         input_dict = yaml.load(f)
 
-    res = alloc_ips(input_dict)
+    palloc = {}
+    if args.previous_alloc:
+        with open(args.previous_alloc) as f:
+            palloc = objectify(json.load(f))
+
+    res = alloc_ips(input_dict, palloc)
 
     if args.output_format == 'json':
         print(json.dumps(deobjectify(res), indent=2))
-    elif args.output_format == 'yaml_anchors':
+    elif args.output_format == 'yaml-anchors':
         print(to_yaml_anchors(res))
     elif args.output_format == 'human':
         print(to_human(res))
@@ -76,11 +87,13 @@ def convert_vlans(d):
     return {k: range(v['start'], v['end']) for k, v in d['vlan_pool'].items()}
 
 
-def alloc_ips(d):
+def alloc_ips(d, p):
     """Allocate IPs
     :param d: the content of the input file as dict
+    :param p: the result of a previous allocation as dict
     :return: dict
     """
+
     res = OrderedDict()
 
     vp = convert_vlans(d)
@@ -88,18 +101,21 @@ def alloc_ips(d):
 
     ipr = {}  # keep track of the IP ranges per subnet
 
-    for k, v in d['ipam'].items():
-        entry = res.setdefault(k, {'metadata': v.get('metadata', {}),
-                                   'ipam': OrderedDict()})
+    def run_for(input_):
 
-        deferred = []
+        deferred = OrderedDict()
 
-        for s in v['schema']:
-            # if 'from' is specifiee, a new subnet should be allocated
+        for k, s in input_.items():
+
+            v = d['ipam'][k[0]]
+            entry = res.setdefault(k[0], {'metadata': v.get('metadata', {}),
+                                          'ipam': OrderedDict()})
+
+            # if 'from' is specified, a new subnet should be allocated
             # from a subnet created before so we defer this allocation
             # until after all normal subnets are allocated
             if 'from' in s:
-                deferred.append(s)
+                deferred[k] = s
                 continue
 
             subnet_name = v['subnet'][s['label']]
@@ -113,7 +129,10 @@ def alloc_ips(d):
 
             # allocate a new subnet if prefixlen is specified
             if 'prefixlen' in s:
+                kind = 'subnet'
+
                 net = ip_pool.allocate_subnet(s['prefixlen'])
+
                 # skip the first and the last IP  (network and broadcast)
                 # if there are at least 4 usable IPs in the subnet
                 eidx = -2 if net.size >= 4 else -1
@@ -122,8 +141,9 @@ def alloc_ips(d):
 
             # allocate a range/part of the net if size is specified
             elif 'size' in s:
+                kind = 'ip_range_global'
                 # TODO: this is more a hack to avoid issues with empty pool
-                # as the pool is allocated when dc entry is created
+                # as the pool is allocated when the parent is created
                 net = netaddr.IPNetwork(ip_pool.input[0])
 
                 # make sure the last IP is not used
@@ -150,19 +170,24 @@ def alloc_ips(d):
                 'gateway': gw_ip,
                 'cidr': net,
                 'prefixlen': net.prefixlen,
-                'netmask': net.netmask
+                'netmask': net.netmask,
+                'kind': kind
             }
 
         # handled deferred allocations
         d_ipr = {}
-        for s in deferred:
+        for k, s in deferred.items():
+            kind = "ip_range_local"
+
+            entry = res[k[0]]
             net = entry['ipam'][s['from']]['cidr']
+
             # make sure the last IP is not used
             # so that it can be used for the gateway
             # start the ip range from -3 as -2 is the last usable ip
             eidx = -3 if net.size >= 4 else -2
             ip_range = d_ipr.setdefault(
-                s['from'], IpRangeAllocator(net, end_index=eidx))
+                (k[0], s['from']), IpRangeAllocator(net, end_index=eidx))
             ip_range = ip_range.alloc(s['size'])
 
             # reserve the last usable IP for the gateway
@@ -177,25 +202,69 @@ def alloc_ips(d):
                 'gateway': gw_ip,
                 'cidr': net,
                 'prefixlen': net.prefixlen,
-                'netmask': net.netmask
+                'netmask': net.netmask,
+                'kind': kind
             }
+
+    old, new = filter_entries(d, p)
+
+    # process the new entries last to avoid new entries
+    # taking over IPs for old entries
+    run_for(old)
+    run_for(new)
 
     return res
 
 
+def filter_entries(d, p):
+    """Separate the new entries from the old/previously created ones"""
+    new = OrderedDict()
+    old = OrderedDict()
+    for k, v in d['ipam'].items():
+        for s in v['schema']:
+            # check if there is a previous allocation for the current entry
+            pv = p.get(k, {}).get('ipam', {}).get(s['name'])
+            if pv is None:
+                # defer IP allocation for the new entries to the end
+                new[(k, s['name'])] = s
+            else:
+                old[(k, s['name'])] = s
+    return old, new
+
+
 def ip_range_to_dict(r):
     """Convert an IPRange to a dict"""
-    return {'start': str(r[0]), 'end': str(r[-1]), 'str': str(r)}
+    return {
+        'start': str(r[0]),
+        'end': str(r[-1]),
+        'str': str(r),
+        'size': len(r),
+    }
 
 
 def deobjectify(d):
-    """Remove the objecst from the return dict"""
+    """Remove the objects from the return dict"""
     for entry in d.values():
         for v in entry['ipam'].values():
             v['ip_range'] = ip_range_to_dict(v['ip_range'])
             v['netmask'] = str(v['netmask'])
             v['cidr'] = str(v['cidr'])
             v['gateway'] = str(v['gateway']) if v['gateway'] else None
+    return d
+
+
+def objectify(d):
+    """Convert strings to netaddr objects where applicable
+    Note: this is the reverse operation of deobjectify()
+    """
+    for entry in d.values():
+        for v in entry['ipam'].values():
+            v['ip_range'] = netaddr.IPRange(v['ip_range']['start'],
+                                            v['ip_range']['end'])
+            v['netmask'] = netaddr.IPAddress(v['netmask'])
+            v['cidr'] = netaddr.IPNetwork(v['cidr'])
+            if v['gateway']:
+                v['gateway'] = netaddr.IPAddress(v['gateway'])
     return d
 
 
