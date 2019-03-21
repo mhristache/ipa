@@ -6,6 +6,7 @@ import argparse
 import sys
 from ruamel.yaml import YAML
 from subnet import *
+import copy
 
 
 def main(input_args):
@@ -82,9 +83,25 @@ def convert_subnets(d):
     return acc
 
 
+class VlanPool(object):
+
+    def __init__(self, first, last):
+        self.first = first
+        self.last = last
+        self.pool = iter(range(first, last))
+
+    def alloc(self):
+        return next(self.pool)
+
+    def unused(self):
+        u = list(self.pool)
+        return u[0], u[-1] + 1
+
+
 def convert_vlans(d):
     # TODO: add some validation
-    return {k: range(v['start'], v['end']) for k, v in d['vlan_pool'].items()}
+    return {k: VlanPool(v['start'], v['end'])
+            for k, v in d['vlan_pool'].items()}
 
 
 def alloc_ips(d, p):
@@ -93,7 +110,6 @@ def alloc_ips(d, p):
     :param p: the result of a previous allocation as dict
     :return: dict
     """
-
     res = OrderedDict()
 
     vp = convert_vlans(d)
@@ -108,8 +124,8 @@ def alloc_ips(d, p):
         for k, s in input_.items():
 
             v = d['ipam'][k[0]]
-            entry = res.setdefault(k[0], {'metadata': v.get('metadata', {}),
-                                          'ipam': OrderedDict()})
+            entry = res.setdefault(k[0], {'properties': v.get('properties', {}),
+                                          'ipa': OrderedDict()})
 
             # if 'from' is specified, a new subnet should be allocated
             # from a subnet created before so we defer this allocation
@@ -125,7 +141,7 @@ def alloc_ips(d, p):
             vlan_pool = vp.get(vlan_pool_name)
 
             # allocate a vlan is there is a vlan pool defined for the label
-            vid = vlan_pool.pop(0) if vlan_pool is not None else None
+            vid = vlan_pool.alloc() if vlan_pool is not None else None
 
             # allocate a new subnet if prefixlen is specified
             if 'prefixlen' in s:
@@ -162,17 +178,19 @@ def alloc_ips(d, p):
             # if the net is big enough for that
             gw_ip = net[-2] if net.size >= 4 else None
 
-            entry['ipam'][s['name']] = {
+            entry['ipa'][s['name']] = {
                 'vlan': vid,
-                'metadata': s.get('metadata', {}),
                 'label': s['label'],
                 'ip_range': ip_range,
                 'gateway': gw_ip,
                 'cidr': net,
                 'prefixlen': net.prefixlen,
                 'netmask': net.netmask,
-                'kind': kind
+                'properties': s.get('properties', {}),
+                'metadata': s['metadata'],
             }
+
+            entry['ipa'][s['name']]['metadata']['type'] = kind
 
         # handled deferred allocations
         d_ipr = {}
@@ -180,7 +198,7 @@ def alloc_ips(d, p):
             kind = "ip_range_local"
 
             entry = res[k[0]]
-            net = entry['ipam'][s['from']]['cidr']
+            net = entry['ipa'][s['from']]['cidr']
 
             # make sure the last IP is not used
             # so that it can be used for the gateway
@@ -194,17 +212,19 @@ def alloc_ips(d, p):
             # if the net is big enough for that
             gw_ip = net[-2] if net.size >= 4 else None
 
-            entry['ipam'][s['name']] = {
+            entry['ipa'][s['name']] = {
                 'vlan': None,
-                'metadata': s.get('metadata', {}),
+                'properties': s.get('properties', {}),
                 'label': None,
                 'ip_range': ip_range,
                 'gateway': gw_ip,
                 'cidr': net,
                 'prefixlen': net.prefixlen,
                 'netmask': net.netmask,
-                'kind': kind
+                'metadata': s['metadata'],
             }
+
+            entry['ipa'][s['name']]['metadata']['type'] = kind
 
     old, new = filter_entries(d, p)
 
@@ -213,7 +233,11 @@ def alloc_ips(d, p):
     run_for(old)
     run_for(new)
 
-    return res
+    return {
+        'ipam': res,
+        'ip_pool': ipp,
+        'vlan_pool': vp,
+    }
 
 
 def filter_entries(d, p):
@@ -229,6 +253,17 @@ def filter_entries(d, p):
                 new[(k, s['name'])] = s
             else:
                 old[(k, s['name'])] = s
+
+    # find the last used id then allocate ids for the new entries
+    last_id = max([x['metadata']['id'] for x in old.values()] or [0])
+    for k, v in new.items():
+        # each entry gets an id in consecutive order of definition
+        # the id is used to keep track of entries which are added later
+        # (not included in the first version of the input file)
+        new[k] = copy.deepcopy(v)
+        new[k].setdefault('metadata', {})['id'] = last_id + 1
+        last_id += 1
+
     return old, new
 
 
@@ -242,14 +277,51 @@ def ip_range_to_dict(r):
     }
 
 
+def ip_pool_to_dict(ipp):
+    """Convert an IPPool object to a dict"""
+    return {
+        'input': ipp.input[0],
+        'unused': [str(x) for x in ipp.pool.iter_cidrs()],
+    }
+
+
+def dict_to_ip_pool(d):
+    """The reverse operation to ip_pool_to_dict()"""
+    ipp = IPPool(*d['input'])
+    ipp.pool = netaddr.IPSet(d['unused'])
+    return ipp
+
+
+def vlan_pool_to_dict(vp):
+    """Convert a VlanPool to a dict"""
+    return {
+        'input': (vp.first, vp.last),
+        'unused': vp.unused()
+    }
+
+
+def dict_to_vlan_pool(d):
+    """The reverse operation to vlan_pool_to_dict()"""
+    vp = VlanPool(*d['input'])
+    vp.pool = iter(range(*d['unused']))
+    return vp
+
+
 def deobjectify(d):
     """Remove the objects from the return dict"""
-    for entry in d.values():
-        for v in entry['ipam'].values():
+    for entry in d['ipam'].values():
+        for v in entry['ipa'].values():
             v['ip_range'] = ip_range_to_dict(v['ip_range'])
             v['netmask'] = str(v['netmask'])
             v['cidr'] = str(v['cidr'])
             v['gateway'] = str(v['gateway']) if v['gateway'] else None
+
+    for k, v in d['ip_pool'].items():
+        d['ip_pool'][k] = ip_pool_to_dict(v)
+
+    for k, v in d['vlan_pool'].items():
+        d['vlan_pool'][k] = vlan_pool_to_dict(v)
+
     return d
 
 
@@ -257,14 +329,21 @@ def objectify(d):
     """Convert strings to netaddr objects where applicable
     Note: this is the reverse operation of deobjectify()
     """
-    for entry in d.values():
-        for v in entry['ipam'].values():
+    for entry in d['ipam'].values():
+        for v in entry['ipa'].values():
             v['ip_range'] = netaddr.IPRange(v['ip_range']['start'],
                                             v['ip_range']['end'])
             v['netmask'] = netaddr.IPAddress(v['netmask'])
             v['cidr'] = netaddr.IPNetwork(v['cidr'])
             if v['gateway']:
                 v['gateway'] = netaddr.IPAddress(v['gateway'])
+
+    for k, v in d['ip_pool'].items():
+        d[k] = dict_to_ip_pool(v)
+
+    for k, v in d['vlan_pool'].items():
+        d[k] = dict_to_vlan_pool(v)
+
     return d
 
 
@@ -280,13 +359,13 @@ def to_yaml_anchors(d):
             s += '{} {}'.format(k, v)
             res.append(s)
         elif isinstance(v, dict):
-            if v.get('metadata', {}).get('reserved', False):
+            if v.get('properties', {}).get('reserved', False):
                 return
             new_s = '{}{}_'.format(s, k)
             for k1, v1 in v.items():
                 create_anchor(k1, v1, new_s)
 
-    for k_, v_ in d.items():
+    for k_, v_ in d['ipam'].items():
         create_anchor(k_, v_)
 
     return "\n".join(res)
@@ -295,6 +374,7 @@ def to_yaml_anchors(d):
 def to_human(d):
     """Convert the response to a human readable format"""
     deobjectify(d)
+    d = d['ipam']
 
     r = []
 
@@ -304,23 +384,23 @@ def to_human(d):
         [len("NF")]
     )
     l_net = max(
-        [len(x) for v in d for x in d[v]['ipam'].keys()] +
+        [len(x) for v in d for x in d[v]['ipa'].keys()] +
         [len("NET")]
     )
     l_ip = max(
-        [len(x['cidr']) for v in d for x in d[v]['ipam'].values()] +
+        [len(x['cidr']) for v in d for x in d[v]['ipa'].values()] +
         [len("CIDR")]
     )
     l_vlan = max(
-        [len(str(x['vlan'])) for v in d for x in d[v]['ipam'].values()] +
+        [len(str(x['vlan'])) for v in d for x in d[v]['ipa'].values()] +
         [len("VLAN")]
     )
     l_ipr = max(
-        [len(x['ip_range']['str']) for v in d for x in d[v]['ipam'].values()] +
+        [len(x['ip_range']['str']) for v in d for x in d[v]['ipa'].values()] +
         [len("IP_RANGE")]
     )
     l_gw = max(
-        [len(x['gateway'] or '-')for v in d for x in d[v]['ipam'].values()] +
+        [len(x['gateway'] or '-')for v in d for x in d[v]['ipa'].values()] +
         [len("GW_IP")]
     )
 
@@ -337,9 +417,9 @@ def to_human(d):
     r.append("-" * (l_nf + l_net + l_ip + l_vlan + l_ipr + l_gw + 10))
 
     for k, v in d.items():
-        for k1, v1 in v['ipam'].items():
+        for k1, v1 in v['ipa'].items():
             # do not print the reserved IPs
-            if v1.get('metadata', {}).get('reserved', False):
+            if v1.get('properties', {}).get('reserved', False):
                 continue
             add_entry(k,
                       k1,
