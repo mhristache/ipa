@@ -45,11 +45,11 @@ def main(input_args):
     res = alloc_ips(input_dict, palloc)
 
     if args.output_format == 'json':
-        print(json.dumps(deobjectify(res), indent=2))
+        return json.dumps(deobjectify(res), indent=2)
     elif args.output_format == 'yaml-anchors':
-        print(to_yaml_anchors(res))
+        return to_yaml_anchors(res)
     elif args.output_format == 'human':
-        print(to_human(res))
+        return to_human(res)
 
 
 def convert_subnets(d):
@@ -432,4 +432,4 @@ def to_human(d):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    print(main(sys.argv[1:]))
