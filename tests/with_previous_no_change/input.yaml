@@ -1,0 +1,35 @@
+subnet:
+  net1: {cidr: 10.10.0.0/16}
+
+  main_net:   {from: net1, prefixlen: 24}
+  shared_net: {from: net1, prefixlen: 24}
+
+vlan_pool:
+  pool1: {start: 100, end: 1000}
+
+ip_allocation_schemas:
+  - &foo
+    - {name: ln_1,           prefixlen: 29, label: linknet}
+    - {name: ln_2,           prefixlen: 28, label: linknet, properties: {key: value}}
+    - {name: reserved_vip_1, prefixlen: 32, label: vip,     properties: {reserved: True}}
+    - {name: vip_1,          prefixlen: 32, label: vip}
+    - {name: shared_range,   size: 10,      label: shared}
+
+  - &bar
+    - {name: reserved_vip_1, prefixlen: 32, label: vip, properties: {reserved: True}}
+    - {name: vip_1,          prefixlen: 32, label: vip}
+    - {name: shared_range,   size: 1,       label: shared}
+    - {name: vip_2,          prefixlen: 32, label: vip}
+
+  - &shared_net
+    - {name: pool_net,       prefixlen: 24, label: linknet, properties: {key1: value1}}
+    - {name: reserved_range,      size: 20, label: shared,  properties: {reserved: True}}
+
+ipam:
+  foo_1: {schema: *foo, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}, properties: {foo: bar}}
+  foo_2: {schema: *foo, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}}
+
+  shared_net: {schema: *shared_net, subnet: {linknet: shared_net, shared: shared_net}, vlan_pool: {linknet: pool1}}
+
+  bar_1: {schema: *bar, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}, properties: {bar:foo}}
+  bar_2: {schema: *bar, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}}

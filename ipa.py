@@ -23,13 +23,21 @@ def main(input_args):
                              'Supported options: {}. Default: human'
                              .format(", ".join(output_formats)))
 
-    parser.add_argument('-p',
-                        dest="previous_alloc",
-                        metavar="FILE.json",
-                        help='the result of a previous run/allocation, '
-                             'in json format.')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-p',
+                       dest="previous_alloc",
+                       metavar="FILE.json",
+                       help='the result of a previous run/allocation, '
+                            'in json format.')
 
-    parser.add_argument('--version', action='version', version='0.1')
+    group.add_argument('--first-run',
+                       dest="is_first_run",
+                       action="store_true",
+                       help="use this option when it's the first allocation "
+                            "done with the given input file (i.e. there are no "
+                            "previous allocations that have to be preserved)")
+
+    parser.add_argument('--version', action='version', version='0.2')
 
     args = parser.parse_args(input_args)
 
@@ -247,12 +255,14 @@ def filter_entries(d, p):
     for k, v in d['ipam'].items():
         for s in v['schema']:
             # check if there is a previous allocation for the current entry
-            pv = p.get(k, {}).get('ipam', {}).get(s['name'])
+            pv = p.get('ipam', {}).get(k, {}).get('ipa', {}).get(s['name'])
             if pv is None:
                 # defer IP allocation for the new entries to the end
-                new[(k, s['name'])] = s
+                new[(k, s['name'])] = copy.deepcopy(s)
             else:
-                old[(k, s['name'])] = s
+                old[(k, s['name'])] = copy.deepcopy(s)
+                # propagate the metadata
+                old[(k, s['name'])]['metadata'] = pv['metadata']
 
     # find the last used id then allocate ids for the new entries
     last_id = max([x['metadata']['id'] for x in old.values()] or [0])
@@ -287,7 +297,7 @@ def ip_pool_to_dict(ipp):
 
 def dict_to_ip_pool(d):
     """The reverse operation to ip_pool_to_dict()"""
-    ipp = IPPool(*d['input'])
+    ipp = IPPool(d['input'])
     ipp.pool = netaddr.IPSet(d['unused'])
     return ipp
 
