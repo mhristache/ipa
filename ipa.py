@@ -34,8 +34,9 @@ def main(input_args):
                        dest="is_first_run",
                        action="store_true",
                        help="use this option when it's the first allocation "
-                            "done with the given input file (i.e. there are no "
-                            "previous allocations that have to be preserved)")
+                            "done with the given input file (i.e. there are "
+                            "no previous ip allocations that have to be "
+                            "preserved)")
 
     parser.add_argument('--version', action='version', version='0.2')
 
@@ -118,7 +119,7 @@ def alloc_ips(d, p):
     :param p: the result of a previous allocation as dict
     :return: dict
     """
-    res = OrderedDict()
+    tmp = {}
 
     vp = convert_vlans(d)
     ipp = convert_subnets(d)
@@ -130,10 +131,7 @@ def alloc_ips(d, p):
         deferred = OrderedDict()
 
         for k, s in input_.items():
-
             v = d['ipam'][k[0]]
-            entry = res.setdefault(k[0], {'properties': v.get('properties', {}),
-                                          'ipa': OrderedDict()})
 
             # if 'from' is specified, a new subnet should be allocated
             # from a subnet created before so we defer this allocation
@@ -186,7 +184,9 @@ def alloc_ips(d, p):
             # if the net is big enough for that
             gw_ip = net[-2] if net.size >= 4 else None
 
-            entry['ipa'][s['name']] = {
+            s['metadata'].update({'type': kind})
+
+            tmp[k] = {
                 'vlan': vid,
                 'label': s['label'],
                 'ip_range': ip_range,
@@ -198,15 +198,12 @@ def alloc_ips(d, p):
                 'metadata': s['metadata'],
             }
 
-            entry['ipa'][s['name']]['metadata']['type'] = kind
-
         # handled deferred allocations
         d_ipr = {}
         for k, s in deferred.items():
             kind = "ip_range_local"
 
-            entry = res[k[0]]
-            net = entry['ipa'][s['from']]['cidr']
+            net = tmp[s['from']]['cidr']
 
             # make sure the last IP is not used
             # so that it can be used for the gateway
@@ -220,7 +217,9 @@ def alloc_ips(d, p):
             # if the net is big enough for that
             gw_ip = net[-2] if net.size >= 4 else None
 
-            entry['ipa'][s['name']] = {
+            s['metadata'].update({'type': kind})
+
+            tmp[k] = {
                 'vlan': None,
                 'properties': s.get('properties', {}),
                 'label': None,
@@ -232,14 +231,20 @@ def alloc_ips(d, p):
                 'metadata': s['metadata'],
             }
 
-            entry['ipa'][s['name']]['metadata']['type'] = kind
-
     old, new = filter_entries(d, p)
 
     # process the new entries last to avoid new entries
     # taking over IPs for old entries
     run_for(old)
     run_for(new)
+
+    # create the final data structure
+    res = OrderedDict()
+
+    for k, v in d['ipam'].items():
+        res[k] = {'properties': v.get('properties', {}), 'ipa': OrderedDict()}
+        for s in v['schema']:
+            res[k]['ipa'][s['name']] = tmp[(k, s['name'])]
 
     return {
         'ipam': res,

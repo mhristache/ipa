@@ -61,6 +61,15 @@ class IpaTest(_BaseTestCase):
     def test_prev_run_no_change_yaml_anchors_output(self):
         self.run_test('with_previous_no_change', 'yaml-anchors', False)
 
+    def test_prev_run_basic_change_text_output(self):
+        self.run_test('with_previous_basic_change', 'human', False)
+
+    def test_prev_run_basic_change_json_output(self):
+        self.run_test('with_previous_basic_change', 'json', False)
+
+    def test_prev_run_basic_change_yaml_anchors_output(self):
+        self.run_test('with_previous_basic_change', 'yaml-anchors', False)
+
     def run_test(self, tc_name, output_format, is_first_run):
         if output_format == 'human':
             ofile_name = 'output.txt'
