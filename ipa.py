@@ -279,6 +279,11 @@ def filter_entries(d, p):
         new[k].setdefault('metadata', {})['id'] = last_id + 1
         last_id += 1
 
+    # sort the old values based on the id
+    # as allocation is done in the order inside the dict
+    old = OrderedDict(
+        sorted(old.items(), key=lambda item: item[1]['metadata']['id']))
+
     return old, new
 
 
