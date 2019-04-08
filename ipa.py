@@ -203,7 +203,7 @@ def alloc_ips(d, p):
         for k, s in deferred.items():
             kind = "ip_range_local"
 
-            net = tmp[s['from']]['cidr']
+            net = tmp[(k[0], s['from'])]['cidr']
 
             # make sure the last IP is not used
             # so that it can be used for the gateway
