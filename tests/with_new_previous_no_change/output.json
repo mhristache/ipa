@@ -105,8 +105,12 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 5
+            "type": "ip_range", 
+            "id": 5, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -232,8 +236,12 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 27
+            "type": "ip_range", 
+            "id": 27, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -359,8 +367,12 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 10
+            "type": "ip_range", 
+            "id": 10, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -404,8 +416,12 @@
         }, 
         "range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 30
+            "type": "ip_range", 
+            "id": 30, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -449,8 +465,12 @@
         }, 
         "reserved_range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 12
+            "type": "ip_range", 
+            "id": 12, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {
@@ -534,8 +554,12 @@
         }, 
         "shared_range_new": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 32
+            "type": "ip_range", 
+            "id": 32, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -553,8 +577,12 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 15
+            "type": "ip_range", 
+            "id": 15, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -657,8 +685,12 @@
         }, 
         "shared_range_new": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 34
+            "type": "ip_range", 
+            "id": 34, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 
@@ -676,8 +708,12 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
-            "id": 19
+            "type": "ip_range", 
+            "id": 19, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ]
           }, 
           "netmask": "255.255.255.0", 
           "properties": {}, 

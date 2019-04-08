@@ -34,7 +34,7 @@ ipam:
 - &foo_1_ipa_vip_1_prefixlen 32
 - &foo_1_ipa_vip_1_cidr 10.10.0.9/32
 - &foo_1_ipa_vip_1_label vip
-- &foo_1_ipa_shared_range_metadata_type ip_range_global
+- &foo_1_ipa_shared_range_metadata_type ip_range
 - &foo_1_ipa_shared_range_metadata_id 5
 - &foo_1_ipa_shared_range_netmask 255.255.255.0
 - &foo_1_ipa_shared_range_ip_range_start 10.10.1.1
@@ -81,7 +81,7 @@ ipam:
 - &foo_2_ipa_vip_1_prefixlen 32
 - &foo_2_ipa_vip_1_cidr 10.10.0.11/32
 - &foo_2_ipa_vip_1_label vip
-- &foo_2_ipa_shared_range_metadata_type ip_range_global
+- &foo_2_ipa_shared_range_metadata_type ip_range
 - &foo_2_ipa_shared_range_metadata_id 10
 - &foo_2_ipa_shared_range_netmask 255.255.255.0
 - &foo_2_ipa_shared_range_ip_range_start 10.10.1.11
@@ -115,7 +115,7 @@ ipam:
 - &bar_1_ipa_vip_1_prefixlen 32
 - &bar_1_ipa_vip_1_cidr 10.10.0.13/32
 - &bar_1_ipa_vip_1_label vip
-- &bar_1_ipa_shared_range_metadata_type ip_range_global
+- &bar_1_ipa_shared_range_metadata_type ip_range
 - &bar_1_ipa_shared_range_metadata_id 15
 - &bar_1_ipa_shared_range_netmask 255.255.255.0
 - &bar_1_ipa_shared_range_ip_range_start 10.10.1.41
@@ -146,7 +146,7 @@ ipam:
 - &bar_2_ipa_vip_1_prefixlen 32
 - &bar_2_ipa_vip_1_cidr 10.10.0.40/32
 - &bar_2_ipa_vip_1_label vip
-- &bar_2_ipa_shared_range_metadata_type ip_range_global
+- &bar_2_ipa_shared_range_metadata_type ip_range
 - &bar_2_ipa_shared_range_metadata_id 19
 - &bar_2_ipa_shared_range_netmask 255.255.255.0
 - &bar_2_ipa_shared_range_ip_range_start 10.10.1.42

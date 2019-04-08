@@ -105,7 +105,7 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 5
           }, 
           "netmask": "255.255.255.0", 
@@ -232,7 +232,7 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 27
           }, 
           "netmask": "255.255.255.0", 
@@ -359,7 +359,7 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 10
           }, 
           "netmask": "255.255.255.0", 
@@ -404,7 +404,7 @@
         }, 
         "range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 30
           }, 
           "netmask": "255.255.255.0", 
@@ -449,7 +449,7 @@
         }, 
         "reserved_range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 12
           }, 
           "netmask": "255.255.255.0", 
@@ -534,7 +534,7 @@
         }, 
         "shared_range_new": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 32
           }, 
           "netmask": "255.255.255.0", 
@@ -553,7 +553,7 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 15
           }, 
           "netmask": "255.255.255.0", 
@@ -657,7 +657,7 @@
         }, 
         "shared_range_new": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 34
           }, 
           "netmask": "255.255.255.0", 
@@ -676,7 +676,7 @@
         }, 
         "shared_range": {
           "metadata": {
-            "type": "ip_range_global", 
+            "type": "ip_range", 
             "id": 19
           }, 
           "netmask": "255.255.255.0", 

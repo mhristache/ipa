@@ -133,11 +133,18 @@ def alloc_ips(d, p):
         for k, s in input_.items():
             v = d['ipam'][k[0]]
 
-            # if 'from' is specified, a new subnet should be allocated
+            # if 'size' is specified, a new range should be allocated
             # from a subnet created before so we defer this allocation
             # until after all normal subnets are allocated
-            if 'from' in s:
-                deferred[k] = s
+            if 'size' in s:
+                # find the key to the parent subnet
+                # from where the range is supposed to be allocated from
+                parent_str = v['ip_range'][s['label']]
+                parent = parent_str.split('.')
+                assert len(parent) == 2,\
+                    "'{}' does not have the expected format (<node>.<entry> " \
+                    "or .<entry>)".format(parent_str)
+                deferred[k] = (s, parent[0], parent[1])
                 continue
 
             subnet_name = v['subnet'][s['label']]
@@ -161,22 +168,6 @@ def alloc_ips(d, p):
                 sidx = 1 if net.size >= 4 else 0
                 ip_range = netaddr.IPRange(net[sidx], net[eidx])
 
-            # allocate a range/part of the net if size is specified
-            elif 'size' in s:
-                kind = 'ip_range_global'
-                # TODO: this is more a hack to avoid issues with empty pool
-                # as the pool is allocated when the parent is created
-                net = netaddr.IPNetwork(ip_pool.input[0])
-
-                # make sure the last IP is not used
-                # so that it can be used for the gateway
-                # start the ip range from -3 as -2 is the last usable ip
-                eidx = -3 if net.size >= 4 else -2
-
-                ip_range = ipr.setdefault(
-                    subnet_name, IpRangeAllocator(net, end_index=eidx))
-                ip_range = ip_range.alloc(s['size'])
-
             else:
                 raise NotImplementedError
 
@@ -199,35 +190,38 @@ def alloc_ips(d, p):
             }
 
         # handled deferred allocations
-        d_ipr = {}
-        for k, s in deferred.items():
-            kind = "ip_range_local"
+        for k, v in deferred.items():
+            s, node_k, entry_k = v
 
-            net = tmp[(k[0], s['from'])]['cidr']
+            # use the current node if there is no key for the parent node
+            node_k = v[1] or k[0]
+
+            net = tmp[(node_k, entry_k)]['cidr']
 
             # make sure the last IP is not used
             # so that it can be used for the gateway
             # start the ip range from -3 as -2 is the last usable ip
             eidx = -3 if net.size >= 4 else -2
-            ip_range = d_ipr.setdefault(
-                (k[0], s['from']), IpRangeAllocator(net, end_index=eidx))
+            ip_range = ipr.setdefault(
+                (node_k, entry_k), IpRangeAllocator(net, end_index=eidx))
             ip_range = ip_range.alloc(s['size'])
 
             # reserve the last usable IP for the gateway
             # if the net is big enough for that
             gw_ip = net[-2] if net.size >= 4 else None
 
-            s['metadata'].update({'type': kind})
+            s['metadata'].update({'type': 'ip_range',
+                                  'parent': (node_k, entry_k)})
 
             tmp[k] = {
                 'vlan': None,
-                'properties': s.get('properties', {}),
-                'label': None,
+                'label': s['label'],
                 'ip_range': ip_range,
                 'gateway': gw_ip,
                 'cidr': net,
                 'prefixlen': net.prefixlen,
                 'netmask': net.netmask,
+                'properties': s.get('properties', {}),
                 'metadata': s['metadata'],
             }
 

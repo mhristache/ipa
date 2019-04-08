@@ -26,10 +26,10 @@ ip_allocation_schemas:
     - {name: reserved_range,      size: 20, label: shared,  properties: {reserved: True}}
 
 ipam:
-  foo_1: {schema: *foo, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}, properties: {foo: bar}}
-  foo_2: {schema: *foo, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}}
+  foo_1: {schema: *foo, subnet: {linknet: main_net, vip: main_net}, ip_range: {shared: shared_net.pool_net}, vlan_pool: {linknet: pool1}, properties: {foo: bar}}
+  foo_2: {schema: *foo, subnet: {linknet: main_net, vip: main_net}, ip_range: {shared: shared_net.pool_net}, vlan_pool: {linknet: pool1}}
 
-  shared_net: {schema: *shared_net, subnet: {linknet: shared_net, shared: shared_net}, vlan_pool: {linknet: pool1}}
+  shared_net: {schema: *shared_net, subnet: {linknet: shared_net}, ip_range: {shared: shared_net.pool_net}, vlan_pool: {linknet: pool1}}
 
-  bar_1: {schema: *bar, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}, properties: {bar:foo}}
-  bar_2: {schema: *bar, subnet: {linknet: main_net, vip: main_net, shared: shared_net}, vlan_pool: {linknet: pool1}}
+  bar_1: {schema: *bar, subnet: {linknet: main_net, vip: main_net}, ip_range: {shared: shared_net.pool_net}, vlan_pool: {linknet: pool1}, properties: {bar:foo}}
+  bar_2: {schema: *bar, subnet: {linknet: main_net, vip: main_net}, ip_range: {shared: shared_net.pool_net}, vlan_pool: {linknet: pool1}}

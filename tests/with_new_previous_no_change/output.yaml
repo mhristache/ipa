@@ -47,7 +47,7 @@ ipam:
 - &foo_1_ipa_vip_1_prefixlen 32
 - &foo_1_ipa_vip_1_cidr 10.10.0.9/32
 - &foo_1_ipa_vip_1_label vip
-- &foo_1_ipa_shared_range_metadata_type ip_range_global
+- &foo_1_ipa_shared_range_metadata_type ip_range
 - &foo_1_ipa_shared_range_metadata_id 5
 - &foo_1_ipa_shared_range_netmask 255.255.255.0
 - &foo_1_ipa_shared_range_ip_range_start 10.10.1.1
@@ -107,7 +107,7 @@ ipam:
 - &foo_new_ipa_vip_1_prefixlen 32
 - &foo_new_ipa_vip_1_cidr 10.10.0.43/32
 - &foo_new_ipa_vip_1_label vip
-- &foo_new_ipa_shared_range_metadata_type ip_range_global
+- &foo_new_ipa_shared_range_metadata_type ip_range
 - &foo_new_ipa_shared_range_metadata_id 27
 - &foo_new_ipa_shared_range_netmask 255.255.255.0
 - &foo_new_ipa_shared_range_ip_range_start 10.10.1.43
@@ -167,7 +167,7 @@ ipam:
 - &foo_2_ipa_vip_1_prefixlen 32
 - &foo_2_ipa_vip_1_cidr 10.10.0.11/32
 - &foo_2_ipa_vip_1_label vip
-- &foo_2_ipa_shared_range_metadata_type ip_range_global
+- &foo_2_ipa_shared_range_metadata_type ip_range
 - &foo_2_ipa_shared_range_metadata_id 10
 - &foo_2_ipa_shared_range_netmask 255.255.255.0
 - &foo_2_ipa_shared_range_ip_range_start 10.10.1.11
@@ -191,7 +191,7 @@ ipam:
 - &new_ipa_net_vlan 110
 - &new_ipa_net_gateway 10.10.0.158
 - &new_ipa_net_label linknet
-- &new_ipa_range_metadata_type ip_range_global
+- &new_ipa_range_metadata_type ip_range
 - &new_ipa_range_metadata_id 30
 - &new_ipa_range_netmask 255.255.255.0
 - &new_ipa_range_ip_range_start 10.10.1.53
@@ -235,7 +235,7 @@ ipam:
 - &bar_1_ipa_vip_1_prefixlen 32
 - &bar_1_ipa_vip_1_cidr 10.10.0.13/32
 - &bar_1_ipa_vip_1_label vip
-- &bar_1_ipa_shared_range_new_metadata_type ip_range_global
+- &bar_1_ipa_shared_range_new_metadata_type ip_range
 - &bar_1_ipa_shared_range_new_metadata_id 32
 - &bar_1_ipa_shared_range_new_netmask 255.255.255.0
 - &bar_1_ipa_shared_range_new_ip_range_start 10.10.1.73
@@ -246,7 +246,7 @@ ipam:
 - &bar_1_ipa_shared_range_new_cidr 10.10.1.0/24
 - &bar_1_ipa_shared_range_new_gateway 10.10.1.254
 - &bar_1_ipa_shared_range_new_label shared
-- &bar_1_ipa_shared_range_metadata_type ip_range_global
+- &bar_1_ipa_shared_range_metadata_type ip_range
 - &bar_1_ipa_shared_range_metadata_id 15
 - &bar_1_ipa_shared_range_netmask 255.255.255.0
 - &bar_1_ipa_shared_range_ip_range_start 10.10.1.41
@@ -287,7 +287,7 @@ ipam:
 - &bar_2_ipa_vip_1_prefixlen 32
 - &bar_2_ipa_vip_1_cidr 10.10.0.40/32
 - &bar_2_ipa_vip_1_label vip
-- &bar_2_ipa_shared_range_new_metadata_type ip_range_global
+- &bar_2_ipa_shared_range_new_metadata_type ip_range
 - &bar_2_ipa_shared_range_new_metadata_id 34
 - &bar_2_ipa_shared_range_new_netmask 255.255.255.0
 - &bar_2_ipa_shared_range_new_ip_range_start 10.10.1.74
@@ -298,7 +298,7 @@ ipam:
 - &bar_2_ipa_shared_range_new_cidr 10.10.1.0/24
 - &bar_2_ipa_shared_range_new_gateway 10.10.1.254
 - &bar_2_ipa_shared_range_new_label shared
-- &bar_2_ipa_shared_range_metadata_type ip_range_global
+- &bar_2_ipa_shared_range_metadata_type ip_range
 - &bar_2_ipa_shared_range_metadata_id 19
 - &bar_2_ipa_shared_range_netmask 255.255.255.0
 - &bar_2_ipa_shared_range_ip_range_start 10.10.1.42
