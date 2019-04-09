@@ -175,11 +175,10 @@ def alloc_ips(d, p):
             # if the net is big enough for that
             gw_ip = net[-2] if net.size >= 4 else None
 
-            s['metadata'].update({'type': kind})
+            s['metadata'].update({'type': kind, 'label': s['label']})
 
             tmp[k] = {
                 'vlan': vid,
-                'label': s['label'],
                 'ip_range': ip_range,
                 'gateway': gw_ip,
                 'cidr': net,
@@ -211,11 +210,11 @@ def alloc_ips(d, p):
             gw_ip = net[-2] if net.size >= 4 else None
 
             s['metadata'].update({'type': 'ip_range',
-                                  'parent': (node_k, entry_k)})
+                                  'parent': (node_k, entry_k),
+                                  'label': s['label']})
 
             tmp[k] = {
                 'vlan': None,
-                'label': s['label'],
                 'ip_range': ip_range,
                 'gateway': gw_ip,
                 'cidr': net,
@@ -382,7 +381,7 @@ def to_yaml_anchors(d):
     for k_, v_ in d['ipam'].items():
         create_anchor(k_, v_)
 
-    return "\n".join(res)
+    return "\n".join(sorted(res))
 
 
 def to_human(d):
