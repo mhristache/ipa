@@ -364,8 +364,7 @@ def to_yaml_anchors(d):
     """Convert the response to an yaml anchor string that can be used in
     other yaml files, e.g. in j2i templates"""
     deobjectify(d)
-
-    res = ["ipam:"]
+    res = []
 
     def create_anchor(k, v, s='- &'):
         if isinstance(v, (basestring, int, list)):
@@ -380,8 +379,7 @@ def to_yaml_anchors(d):
 
     for k_, v_ in d['ipam'].items():
         create_anchor(k_, v_)
-
-    return "\n".join(sorted(res))
+    return "\n".join(['ipam:'] + sorted(res))
 
 
 def to_human(d):

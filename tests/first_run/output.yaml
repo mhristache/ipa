@@ -1,3 +1,4 @@
+ipam:
 - &bar_1_ipa_shared_range_cidr 10.10.1.0/24
 - &bar_1_ipa_shared_range_gateway 10.10.1.254
 - &bar_1_ipa_shared_range_ip_range_end 10.10.1.41
@@ -166,4 +167,3 @@
 - &shared_net_ipa_pool_net_prefixlen 24
 - &shared_net_ipa_pool_net_properties_key1 value1
 - &shared_net_ipa_pool_net_vlan 104
-ipam:

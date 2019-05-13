@@ -1,3 +1,4 @@
+ipam:
 - &foo_1_ipa_an_ip_in_ln_1_cidr 10.10.0.0/29
 - &foo_1_ipa_an_ip_in_ln_1_gateway 10.10.0.6
 - &foo_1_ipa_an_ip_in_ln_1_ip_range_end 10.10.0.1
@@ -112,4 +113,3 @@
 - &shared_net_ipa_reserved_range_metadata_type ip_range
 - &shared_net_ipa_reserved_range_netmask 255.255.255.128
 - &shared_net_ipa_reserved_range_prefixlen 25
-ipam:
