@@ -1,0 +1,39 @@
+subnet:
+  net1: {cidr: 10.10.0.0/16}
+  main_net:   {from: net1, prefixlen: 24}
+  shared_net: {cidr: 20.20.0.0/24}
+
+vlan_pool:
+  pool1: {start: 100, end: 1000}
+
+ip_allocation_schemas:
+  - &foo
+    - {name: ln_1,          prefixlen: 29, label: linknet}
+    - {name: vip_1,         prefixlen: 32, label: vip}
+    - {name: shared_range,  size: -2,      label: shared}
+    - {name: an_ip_in_ln_1, size: -1,      label: ln_1,  properties: {key1: value1}}
+
+
+  - &shared_net
+    - {name: pool_net,       prefixlen: 25, label: linknet}
+    - {name: reserved_range,      size: 20, label: shared}
+
+ipam:
+  foo_1:
+    schema:     *foo
+    subnet:     {linknet: main_net, vip: main_net}
+    vlan_pool:  {linknet: pool1}
+    ip_range:   {ln_1: .ln_1, shared: shared_net.pool_net}
+    properties: {foo: bar}
+
+  shared_net:
+    schema:     *shared_net
+    subnet:    {linknet: shared_net}
+    vlan_pool: {linknet: pool1}
+    ip_range:  {shared:  .pool_net}
+
+  foo_2:
+    schema:     *foo
+    subnet:     {linknet: main_net, vip: main_net}
+    vlan_pool:  {linknet: pool1}
+    ip_range:   {ln_1: .ln_1, shared: shared_net.pool_net}

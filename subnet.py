@@ -221,15 +221,20 @@ class IpRangeAllocator(object):
         end_idx = int(end_index) if end_index else -2
         self._range = netaddr.IPRange(self._net[start_idx], self._net[end_idx])
 
-    def reserve_ip_at_index(self, index, desc):
-        """Reserve the IP at the given index"""
-
-    def alloc(self, size):
+    def alloc(self, size, from_the_back=False):
         """Allocate an IPRange of the given size from the subnet"""
         assert size <= self._range.size, \
             "Not enough addresses left to allocate the requested IP range. " \
             "Requested {}, available {}".format(size, self._range.size)
-        # allocate the requested range then remove those IP from the poool
-        r = netaddr.IPRange(self._range.first, self._range[size - 1])
-        self._range = netaddr.IPRange(self._range[size], self._range.last)
+        # allocate the requested range then remove those IP from the pool
+        # allocate from the back of the range if that option is specified
+        if from_the_back:
+            sip = self._range[len(self._range) - size]
+            r = netaddr.IPRange(
+                self._range[len(self._range) - size], self._range.last)
+            self._range = netaddr.IPRange(
+                self._range.first, self._range[len(self._range) - size - 1])
+        else:
+            r = netaddr.IPRange(self._range.first, self._range[size - 1])
+            self._range = netaddr.IPRange(self._range[size], self._range.last)
         return r

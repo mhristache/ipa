@@ -1,0 +1,279 @@
+{
+  "ipam": {
+    "foo_1": {
+      "ipa": {
+        "ln_1": {
+          "metadata": {
+            "type": "subnet", 
+            "id": 1, 
+            "label": "linknet"
+          }, 
+          "netmask": "255.255.255.248", 
+          "ip_range": {
+            "start": "10.10.0.1", 
+            "end": "10.10.0.6", 
+            "str": "10.10.0.1-10.10.0.6", 
+            "size": 6
+          }, 
+          "prefixlen": 29, 
+          "cidr": "10.10.0.0/29", 
+          "vlan": 100, 
+          "gateway": "10.10.0.6", 
+          "properties": {}
+        }, 
+        "vip_1": {
+          "metadata": {
+            "type": "subnet", 
+            "id": 2, 
+            "label": "vip"
+          }, 
+          "netmask": "255.255.255.255", 
+          "ip_range": {
+            "start": "10.10.0.8", 
+            "end": "10.10.0.8", 
+            "str": "10.10.0.8-10.10.0.8", 
+            "size": 1
+          }, 
+          "prefixlen": 32, 
+          "cidr": "10.10.0.8/32", 
+          "vlan": null, 
+          "gateway": null, 
+          "properties": {}
+        }, 
+        "shared_range": {
+          "metadata": {
+            "type": "ip_range", 
+            "id": 3, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ], 
+            "label": "shared"
+          }, 
+          "netmask": "255.255.255.128", 
+          "ip_range": {
+            "start": "20.20.0.124", 
+            "end": "20.20.0.125", 
+            "str": "20.20.0.124-20.20.0.125", 
+            "size": 2
+          }, 
+          "prefixlen": 25, 
+          "cidr": "20.20.0.0/25", 
+          "vlan": null, 
+          "gateway": "20.20.0.126", 
+          "properties": {}
+        }, 
+        "an_ip_in_ln_1": {
+          "metadata": {
+            "type": "ip_range", 
+            "id": 4, 
+            "parent": [
+              "foo_1", 
+              "ln_1"
+            ], 
+            "label": "ln_1"
+          }, 
+          "netmask": "255.255.255.248", 
+          "ip_range": {
+            "start": "10.10.0.5", 
+            "end": "10.10.0.5", 
+            "str": "10.10.0.5-10.10.0.5", 
+            "size": 1
+          }, 
+          "prefixlen": 29, 
+          "cidr": "10.10.0.0/29", 
+          "vlan": null, 
+          "gateway": "10.10.0.6", 
+          "properties": {
+            "key1": "value1"
+          }
+        }
+      }, 
+      "properties": {
+        "foo": "bar"
+      }
+    }, 
+    "shared_net": {
+      "ipa": {
+        "pool_net": {
+          "metadata": {
+            "type": "subnet", 
+            "id": 5, 
+            "label": "linknet"
+          }, 
+          "netmask": "255.255.255.128", 
+          "ip_range": {
+            "start": "20.20.0.1", 
+            "end": "20.20.0.126", 
+            "str": "20.20.0.1-20.20.0.126", 
+            "size": 126
+          }, 
+          "prefixlen": 25, 
+          "cidr": "20.20.0.0/25", 
+          "vlan": 101, 
+          "gateway": "20.20.0.126", 
+          "properties": {}
+        }, 
+        "reserved_range": {
+          "metadata": {
+            "type": "ip_range", 
+            "id": 6, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ], 
+            "label": "shared"
+          }, 
+          "netmask": "255.255.255.128", 
+          "ip_range": {
+            "start": "20.20.0.1", 
+            "end": "20.20.0.20", 
+            "str": "20.20.0.1-20.20.0.20", 
+            "size": 20
+          }, 
+          "prefixlen": 25, 
+          "cidr": "20.20.0.0/25", 
+          "vlan": null, 
+          "gateway": "20.20.0.126", 
+          "properties": {}
+        }
+      }, 
+      "properties": {}
+    }, 
+    "foo_2": {
+      "ipa": {
+        "ln_1": {
+          "metadata": {
+            "type": "subnet", 
+            "id": 7, 
+            "label": "linknet"
+          }, 
+          "netmask": "255.255.255.248", 
+          "ip_range": {
+            "start": "10.10.0.17", 
+            "end": "10.10.0.22", 
+            "str": "10.10.0.17-10.10.0.22", 
+            "size": 6
+          }, 
+          "prefixlen": 29, 
+          "cidr": "10.10.0.16/29", 
+          "vlan": 102, 
+          "gateway": "10.10.0.22", 
+          "properties": {}
+        }, 
+        "vip_1": {
+          "metadata": {
+            "type": "subnet", 
+            "id": 8, 
+            "label": "vip"
+          }, 
+          "netmask": "255.255.255.255", 
+          "ip_range": {
+            "start": "10.10.0.9", 
+            "end": "10.10.0.9", 
+            "str": "10.10.0.9-10.10.0.9", 
+            "size": 1
+          }, 
+          "prefixlen": 32, 
+          "cidr": "10.10.0.9/32", 
+          "vlan": null, 
+          "gateway": null, 
+          "properties": {}
+        }, 
+        "shared_range": {
+          "metadata": {
+            "type": "ip_range", 
+            "id": 9, 
+            "parent": [
+              "shared_net", 
+              "pool_net"
+            ], 
+            "label": "shared"
+          }, 
+          "netmask": "255.255.255.128", 
+          "ip_range": {
+            "start": "20.20.0.122", 
+            "end": "20.20.0.123", 
+            "str": "20.20.0.122-20.20.0.123", 
+            "size": 2
+          }, 
+          "prefixlen": 25, 
+          "cidr": "20.20.0.0/25", 
+          "vlan": null, 
+          "gateway": "20.20.0.126", 
+          "properties": {}
+        }, 
+        "an_ip_in_ln_1": {
+          "metadata": {
+            "type": "ip_range", 
+            "id": 10, 
+            "parent": [
+              "foo_2", 
+              "ln_1"
+            ], 
+            "label": "ln_1"
+          }, 
+          "netmask": "255.255.255.248", 
+          "ip_range": {
+            "start": "10.10.0.21", 
+            "end": "10.10.0.21", 
+            "str": "10.10.0.21-10.10.0.21", 
+            "size": 1
+          }, 
+          "prefixlen": 29, 
+          "cidr": "10.10.0.16/29", 
+          "vlan": null, 
+          "gateway": "10.10.0.22", 
+          "properties": {
+            "key1": "value1"
+          }
+        }
+      }, 
+      "properties": {}
+    }
+  }, 
+  "vlan_pool": {
+    "pool1": {
+      "unused": [
+        103, 
+        1000
+      ], 
+      "input": [
+        100, 
+        1000
+      ]
+    }
+  }, 
+  "ip_pool": {
+    "shared_net": {
+      "unused": [
+        "20.20.0.128/25"
+      ], 
+      "input": "20.20.0.0/24"
+    }, 
+    "main_net": {
+      "unused": [
+        "10.10.0.10/31", 
+        "10.10.0.12/30", 
+        "10.10.0.24/29", 
+        "10.10.0.32/27", 
+        "10.10.0.64/26", 
+        "10.10.0.128/25"
+      ], 
+      "input": "10.10.0.0/24"
+    }, 
+    "net1": {
+      "unused": [
+        "10.10.1.0/24", 
+        "10.10.2.0/23", 
+        "10.10.4.0/22", 
+        "10.10.8.0/21", 
+        "10.10.16.0/20", 
+        "10.10.32.0/19", 
+        "10.10.64.0/18", 
+        "10.10.128.0/17"
+      ], 
+      "input": "10.10.0.0/16"
+    }
+  }
+}

@@ -203,7 +203,17 @@ def alloc_ips(d, p):
             eidx = -3 if net.size >= 4 else -2
             ip_range = ipr.setdefault(
                 (node_k, entry_k), IpRangeAllocator(net, end_index=eidx))
-            ip_range = ip_range.alloc(s['size'])
+
+            # the sign of the size parameter is used to indicate
+            # if the alloc should be done from the back
+            if s['size'] < 0:
+                size = s['size'] * -1
+                from_the_back = True
+            else:
+                size = s['size']
+                from_the_back = False
+
+            ip_range = ip_range.alloc(size, from_the_back)
 
             # reserve the last usable IP for the gateway
             # if the net is big enough for that

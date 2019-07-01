@@ -88,6 +88,15 @@ class IpaTest(_BaseTestCase):
     def test_first_run_with_ip_range_local_yaml_anchors_output(self):
         self.run_test('first_run_with_ip_range_local', 'yaml-anchors', True)
 
+    def test_first_run_with_ip_range_local_reverse_text_output(self):
+        self.run_test('first_run_with_ip_range_local_reverse', 'human', True)
+
+    def test_first_run_with_ip_range_local_reverse_json_output(self):
+        self.run_test('first_run_with_ip_range_local_reverse', 'json', True)
+
+    def test_first_run_with_ip_range_local_reverse_yaml_anchors_output(self):
+        self.run_test('first_run_with_ip_range_local_reverse', 'yaml-anchors', True)
+
     def run_test(self, tc_name, output_format, is_first_run):
         if output_format == 'human':
             ofile_name = 'output.txt'
