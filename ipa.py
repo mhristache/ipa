@@ -424,18 +424,24 @@ def to_human(d):
         [len(x['gateway'] or '-')for v in d for x in d[v]['ipa'].values()] +
         [len("GW_IP")]
     )
+    l_desc = max(
+        [len(x.get('properties', {}).get('desc') or '-')
+         for v in d for x in d[v]['ipa'].values()] +
+        [len("DESCRIPTION")]
+    )
 
-    def add_entry(c1, c2, c3, c4, c5, c6):
-        template = "{}  {}  {}  {}  {} {}"
+    def add_entry(c1, c2, c3, c4, c5, c6, c7):
+        template = "{}  {}  {}  {}  {}  {}  {}"
         r.append(template.format(c1.ljust(l_nf),
                                  c2.ljust(l_net),
                                  c3.ljust(l_ip),
                                  c4.ljust(l_ipr),
                                  c5.ljust(l_gw),
-                                 c6.ljust(l_vlan)))
+                                 c6.ljust(l_vlan),
+                                 c7.ljust(l_desc)))
     # add the title
-    add_entry("NF", "NET", "CIDR", "IP_RANGE", "GW_IP", "VLAN")
-    r.append("-" * (l_nf + l_net + l_ip + l_vlan + l_ipr + l_gw + 10))
+    add_entry("NF", "NET", "CIDR", "IP_RANGE", "GW_IP", "VLAN", "DESCRIPTION")
+    r.append("-" * (l_nf + l_net + l_ip + l_vlan + l_ipr + l_gw + l_desc + 10))
 
     for k, v in d.items():
         for k1, v1 in v['ipa'].items():
@@ -447,7 +453,8 @@ def to_human(d):
                       v1['cidr'],
                       v1['ip_range']['str'],
                       v1['gateway'] or '-',
-                      str(v1['vlan'] or '-'))
+                      str(v1['vlan'] or '-'),
+                      v1.get('properties', {}).get('desc') or '-')
 
     return "\n".join(r)
 

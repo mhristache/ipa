@@ -10,7 +10,7 @@ vlan_pool:
 ip_allocation_schemas:
   - &foo
     - {name: ln_1,           prefixlen: 29, label: linknet}
-    - {name: ln_2,           prefixlen: 28, label: linknet, properties: {key: value}}
+    - {name: ln_2,           prefixlen: 28, label: linknet, properties: {key: value, desc: blabla}}
     - {name: ln_new,         prefixlen: 28, label: linknet, properties: {key: value}}
     - {name: reserved_vip_1, prefixlen: 32, label: vip,     properties: {reserved: True}}
     - {name: vip_1,          prefixlen: 32, label: vip}

@@ -39,7 +39,8 @@
           "vlan": 101, 
           "gateway": "10.10.0.30", 
           "properties": {
-            "key": "value"
+            "key": "value", 
+            "desc": "blabla"
           }
         }, 
         "ln_new": {
@@ -170,7 +171,8 @@
           "vlan": 107, 
           "gateway": "10.10.0.110", 
           "properties": {
-            "key": "value"
+            "key": "value", 
+            "desc": "blabla"
           }
         }, 
         "ln_new": {
@@ -301,7 +303,8 @@
           "vlan": 103, 
           "gateway": "10.10.0.62", 
           "properties": {
-            "key": "value"
+            "key": "value", 
+            "desc": "blabla"
           }
         }, 
         "ln_new": {

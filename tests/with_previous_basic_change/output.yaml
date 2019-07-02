@@ -126,6 +126,7 @@ ipam:
 - &foo_1_ipa_ln_2_metadata_type subnet
 - &foo_1_ipa_ln_2_netmask 255.255.255.240
 - &foo_1_ipa_ln_2_prefixlen 28
+- &foo_1_ipa_ln_2_properties_desc blabla
 - &foo_1_ipa_ln_2_properties_key value
 - &foo_1_ipa_ln_2_vlan 101
 - &foo_1_ipa_ln_new_cidr 10.10.0.64/28
@@ -186,6 +187,7 @@ ipam:
 - &foo_2_ipa_ln_2_metadata_type subnet
 - &foo_2_ipa_ln_2_netmask 255.255.255.240
 - &foo_2_ipa_ln_2_prefixlen 28
+- &foo_2_ipa_ln_2_properties_desc blabla
 - &foo_2_ipa_ln_2_properties_key value
 - &foo_2_ipa_ln_2_vlan 103
 - &foo_2_ipa_ln_new_cidr 10.10.0.128/28
@@ -245,6 +247,7 @@ ipam:
 - &foo_new_ipa_ln_2_metadata_type subnet
 - &foo_new_ipa_ln_2_netmask 255.255.255.240
 - &foo_new_ipa_ln_2_prefixlen 28
+- &foo_new_ipa_ln_2_properties_desc blabla
 - &foo_new_ipa_ln_2_properties_key value
 - &foo_new_ipa_ln_2_vlan 107
 - &foo_new_ipa_ln_new_cidr 10.10.0.112/28
