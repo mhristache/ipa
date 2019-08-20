@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import logging
-import tempfile
-import shutil
 import unittest
 import os
 

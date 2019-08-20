@@ -296,7 +296,7 @@ def ip_range_to_dict(r):
         'start': str(r[0]),
         'end': str(r[-1]),
         'str': str(r),
-        'size': len(r),
+        'size': r.size,
     }
 
 
