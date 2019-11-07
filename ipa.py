@@ -123,7 +123,6 @@ def alloc_ips(d, p):
 
     vp = convert_vlans(d)
     ipp = convert_subnets(d)
-
     ipr = {}  # keep track of the IP ranges per subnet
 
     def run_for(input_):
@@ -249,11 +248,15 @@ def alloc_ips(d, p):
         for s in v['schema']:
             res[k]['ipa'][s['name']] = tmp[(k, s['name'])]
 
-    return {
+    r = {
         'ipam': res,
         'ip_pool': ipp,
         'vlan_pool': vp,
     }
+    # pass along any global metadata
+    if d.get('metadata'):
+        r['metadata'] = d['metadata']
+    return r
 
 
 def filter_entries(d, p):
