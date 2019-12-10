@@ -1,2 +1,2 @@
-ruamel.yaml
-netaddr
+ruamel.yaml==0.15.89
+netaddr==0.7.19
