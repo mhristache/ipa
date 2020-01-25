@@ -253,9 +253,9 @@ def alloc_ips(d, p):
         'ip_pool': ipp,
         'vlan_pool': vp,
     }
-    # pass along any global metadata
-    if d.get('metadata'):
-        r['metadata'] = d['metadata']
+    # pass along any global properties
+    if d.get('properties'):
+        r['properties'] = d['properties']
     return r
 
 
