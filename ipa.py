@@ -409,6 +409,7 @@ def to_human(d):
     )
     l_net = max(
         [len(x) for v in d for x in d[v]['ipa'].keys()] +
+        [len(x.get('properties', {}).get('name') or '-') for v in d for x in d[v]['ipa'].values()] +
         [len("NET")]
     )
     l_ip = max(
@@ -448,11 +449,13 @@ def to_human(d):
 
     for k, v in d.items():
         for k1, v1 in v['ipa'].items():
+            # use the name inside properties, if specified
+            name = v1.get('properties', {}).get('name') or k1
             # do not print the reserved IPs
             if v1.get('properties', {}).get('reserved', False):
                 continue
             add_entry(k,
-                      k1,
+                      name,
                       v1['cidr'],
                       v1['ip_range']['str'],
                       v1['gateway'] or '-',
