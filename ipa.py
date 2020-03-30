@@ -14,7 +14,7 @@ def main(input_args):
     parser.add_argument(dest="input_file",
                         help='the input file in yaml format')
 
-    output_formats = ['human', 'json', 'yaml-anchors']
+    output_formats = ['human', 'json', 'yaml-anchors', 'internal']
     parser.add_argument('-o',
                         dest="output_format",
                         default="human",
@@ -38,7 +38,7 @@ def main(input_args):
                             "no previous ip allocations that have to be "
                             "preserved)")
 
-    parser.add_argument('--version', action='version', version='0.2')
+    parser.add_argument('--version', action='version', version='1.0')
 
     args = parser.parse_args(input_args)
 
@@ -59,6 +59,8 @@ def main(input_args):
         return to_yaml_anchors(res)
     elif args.output_format == 'human':
         return to_human(res)
+    elif args.output_format == 'internal':
+        return res
 
 
 def convert_subnets(d):
