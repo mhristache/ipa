@@ -223,9 +223,9 @@ class IpRangeAllocator(object):
 
     def alloc(self, size, from_the_back=False):
         """Allocate an IPRange of the given size from the subnet"""
-        assert size <= self._range.size, \
+        assert size < self._range.size, \
             "Not enough addresses left to allocate the requested IP range. " \
-            "Requested {}, available {}".format(size, self._range.size)
+            "Requested {}, available {}".format(size, self._range.size - 1)
         # allocate the requested range then remove those IP from the pool
         # allocate from the back of the range if that option is specified
         if from_the_back:
